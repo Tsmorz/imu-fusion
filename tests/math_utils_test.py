@@ -26,4 +26,3 @@ def test_align_to_gravity(gravity_alignment_vector) -> None:
 
     # Assert
     np.testing.assert_array_almost_equal(rot[2, :], gravity_alignment_vector, decimal=3)
-    # assert 1 == 0

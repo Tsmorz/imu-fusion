@@ -45,26 +45,27 @@ def align_to_acceleration(
     :return: Rotation matrix that best aligns with gravity
     """
     if x0 is None:
-        x0 = np.zeros(3)
+        x0 = np.zeros(2)
     residual = minimize(
         fun=orientation_error,
         x0=x0,
         method=method,
         args=acceleration_vec,
-        tol=1e-5,
+        tol=1e-3,
         options={"disp": True},
     )
-    residual.x[0] = 0.0
-    return Rot.from_euler(seq=EULER_ORDER, angles=residual.x, degrees=False).as_matrix()
+    yaw_pitch_roll = [0.0, residual.x[0], residual.x[1]]
+    return Rot.from_euler(seq=EULER_ORDER, angles=yaw_pitch_roll).as_matrix()
 
 
-def orientation_error(angles: np.ndarray, g_vector: np.ndarray) -> float:
+def orientation_error(pitch_roll_angles: np.ndarray, g_vector: np.ndarray) -> float:
     """Find the orientation that would best align with the gravity vector.
 
-    :param angles: Roll, pitch, and yaw angles in degrees
+    :param pitch_roll_angles: Roll, pitch, and yaw angles in degrees
     :param g_vector: Gravity vector
     :return: Error between the gravity vector and the projected vector in the m/s^2
     """
+    angles = np.hstack(([0.0], pitch_roll_angles))
     rot = Rot.from_euler(seq=EULER_ORDER, angles=angles, degrees=False).as_matrix()
     error = np.linalg.norm(np.reshape(g_vector, (3,)) - GRAVITY * rot[2, :])
     return float(error)
