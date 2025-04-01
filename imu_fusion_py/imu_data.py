@@ -62,7 +62,7 @@ class ImuData:
             (self.acc.get_idx(idx), self.gyr.get_idx(idx), self.mag.get_idx(idx))
         )
 
-    def plot(self, figsize: tuple[float, float] = FIG_SIZE) -> None:
+    def plot(self, figsize: tuple[float, float] = FIG_SIZE) -> None:  # pragma: no cover
         """Plot IMU data.
 
         :param figsize: Figure size.
