@@ -170,5 +170,5 @@ if __name__ == "__main__":
 ```
 
 ## References
-[^1]: [3D Rotation matrices](https://en.wikipedia.org/wiki/Rotation_matrix)
+[^1]: [3D Rotation matrices](https://en.wikipedia.org/wiki/Rotation_matrix#General_3D_rotations)
 [^2]: [Matrix Exponentials](https://en.wikipedia.org/wiki/Matrix_exponential#Diagonalizable_case)
