@@ -57,10 +57,10 @@ def main(show_plot: bool = False) -> None:
         rot_from_gyr = apply_angular_velocity(matrix=rot_from_gyr, omegas=gyr, dt=dt)
 
         logger.warning(f"Comparing Acc and Gyr at t={t:.3f} sec")
-        rpy = Rot.from_matrix(rot_from_acc).as_euler(EULER_ORDER, degrees=True)
-        logger.info(f"Acc: {rpy}")
-        rpy = Rot.from_matrix(rot_from_gyr).as_euler(EULER_ORDER, degrees=True)
-        logger.info(f"Gyr: {rpy}")
+        ypr = Rot.from_matrix(rot_from_acc).as_euler(EULER_ORDER, degrees=True)
+        logger.info(f"Acc: {ypr}")
+        ypr = Rot.from_matrix(rot_from_gyr).as_euler(EULER_ORDER, degrees=True)
+        logger.info(f"Gyr: {ypr}")
 
 
 if __name__ == "__main__":  # pragma: no cover
@@ -75,5 +75,4 @@ if __name__ == "__main__":  # pragma: no cover
     )
     args = parser.parse_args()
 
-    show_plot = args.plot
-    main(show_plot=show_plot)
+    main(show_plot=args.plot)
