@@ -66,7 +66,7 @@ $$
 and $\exp\Omega$ is the matrix exponential found through:
 
 $$
-A = V \Lambda V^{-1}
+\Omega = V \Lambda V^{-1}
 $$
 
 where $V$ is the matrix of eigenvectors, and $\Lambda$ is the diagonal matrix of eigenvalues:
