@@ -18,6 +18,7 @@ sympy = "^1.13.3"
 autograd = "^1.7.0"
 scipy = "^1.15.2"
 pandas = "^2.2.3"
+lie-groups-py = "^0.1.5"
 
 
 [build-system]

@@ -1,14 +1,15 @@
 """Add a doc string to my files."""
 
+from typing import Optional
+
 import numpy as np
 import scipy
-from config.definitions import EULER_ORDER
 from loguru import logger
 from scipy.optimize import minimize
 from scipy.spatial.transform import Rotation as Rot
 from sympy import Matrix
 
-GRAVITY_ACCEL = 9.81  # m/s^2
+from imu_fusion_py.config.definitions import EULER_ORDER, GRAVITY, METHOD
 
 
 def skew_matrix(vector: np.ndarray) -> np.ndarray:
@@ -33,44 +34,39 @@ def skew_matrix(vector: np.ndarray) -> np.ndarray:
     return sk
 
 
-def align_to_gravity(
-    g_vector: np.ndarray, order: str = EULER_ORDER, degrees: bool = True
+def align_to_acceleration(
+    acceleration_vec: np.ndarray, x0: Optional[np.ndarray] = None, method: str = METHOD
 ) -> np.ndarray:
     """Find the best roll, pitch, and yaw angles that align with the gravity vector.
 
-    :param g_vector: acceleration values in m/s^2
-    :param order: The order of Euler angles (e.g., XYZ, ZYX).
-    :param degrees: If True, return angles in degrees, otherwise in radians.
+    :param acceleration_vec: acceleration values in m/s^2
+    :param x0: Initial guess for the rotation matrix (default: zeros)
+    :param method: Optimization method (default: "nelder-mead")
     :return: Rotation matrix that best aligns with gravity
     """
-    x0 = np.zeros(3)
+    if x0 is None:
+        x0 = np.zeros(3)
     residual = minimize(
-        orientation_error,
-        x0,
-        method="nelder-mead",
-        args=g_vector,
-        options={"xatol": 1e-8, "disp": True},
+        fun=orientation_error,
+        x0=x0,
+        method=method,
+        args=acceleration_vec,
+        options={"xatol": 1e-8, "disp": False},
     )
-    return Rot.from_euler(seq=order, angles=residual.x, degrees=degrees).as_matrix()
+    return Rot.from_euler(seq=EULER_ORDER, angles=residual.x, degrees=False).as_matrix()
 
 
-def orientation_error(
-    angles: np.ndarray,
-    g_vector: np.ndarray,
-    order: str = EULER_ORDER,
-    degrees: bool = True,
-) -> float:
+def orientation_error(angles: np.ndarray, g_vector: np.ndarray) -> float:
     """Find the orientation that would best align with the gravity vector.
 
     :param angles: Roll, pitch, and yaw angles in degrees
     :param g_vector: Gravity vector
-    :param order: The order of Euler angles (e.g., XYZ, ZYX).
-    :param degrees: If True, angles are in degrees, otherwise in radians.
     :return: Error between the gravity vector and the projected vector in the m/s^2
     """
     gravity = np.linalg.norm(g_vector)
-    rot = Rot.from_euler(order, angles, degrees=degrees).as_matrix()
-    error = np.linalg.norm(g_vector - gravity * rot[2, :])
+    gravity = GRAVITY
+    rot = Rot.from_euler(seq=EULER_ORDER, angles=angles, degrees=False).as_matrix()
+    error = np.linalg.norm(np.reshape(g_vector, (3,)) - gravity * rot[2, :])
     return float(error)
 
 
@@ -144,32 +140,7 @@ def apply_linear_acceleration(
     :param dt: Time interval in seconds.
     :return: Updated position and velocity vectors.
     """
-    residual = accel - GRAVITY_ACCEL * rot @ np.array([[0], [0], [1]])
+    residual = accel - GRAVITY * rot @ np.array([[0], [0], [1]])
     vel += residual * dt
     pos += vel * dt
     return pos, vel, rot
-
-
-if __name__ == "__main__":
-    # define the full state
-    delta_t = 0.01
-    position = np.zeros((3, 1))
-    velocity = np.zeros((3, 1))
-    rotation = np.eye(3)
-
-    # record the measurements
-    for _ii in range(100):
-        acc = np.array([[0.0], [0.0], [0.0]])
-        acc += np.reshape(rotation[-1, :] * GRAVITY_ACCEL, (3, 1))
-        omega = np.array([[0.0], [0.0], [5.0]])
-
-        # process measurements
-        rotation = apply_angular_velocity(matrix=rotation, omegas=omega, dt=delta_t)
-        position, velocity, rotation = apply_linear_acceleration(
-            pos=position, vel=velocity, rot=rotation, accel=acc, dt=delta_t
-        )
-
-        logger.info(f"Pos.T: {position.T} m")
-        logger.info(f"Vel.T: {velocity.T} m/s")
-        rpy = Rot.from_matrix(matrix=rotation).as_euler(EULER_ORDER, degrees=True)
-        logger.info(f"Roll, pitch, yaw: {rpy[0]:.2f}, {rpy[1]:.2f}, {rpy[2]:.2f} (deg)")
