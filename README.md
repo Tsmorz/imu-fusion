@@ -1,8 +1,17 @@
 # imu-fusion
 
-### General 3D rotations
+#### Table of Contents
+[Background Information](#Background Information)
+[Installation](#Install)
+[Development](#Development)
+[Usage](#Usage)
+[References](#References)
 
-Here is a simple footnote[^1].
+## Background Information
+The following sections cover the necessary mathematical to cover the fusion process of the IMU data.
+
+
+### General 3D rotations
 
 A general 3D rotation matrix can be obtained from these three matrices using matrix multiplication.  For example, the product:
 
@@ -35,10 +44,10 @@ $$
   \end{bmatrix}
 \end{align}</math>$$
 
-represents a rotation whose yaw, pitch, and roll angles are $\alpha$, $\beta$ and $\gamma$, respectively. More formally, it is an intrinsic rotation whose Tait–Bryan angles are  $\alpha$, $\beta$ and $\gamma$, about axes  $x$, $y$ and $z$, respectively.
+represents a rotation whose yaw, pitch, and roll angles are $\alpha$, $\beta$ and $\gamma$, respectively. More formally, it is an intrinsic rotation whose Tait–Bryan angles are  $\alpha$, $\beta$ and $\gamma$, about axes  $x$, $y$ and $z$, respectively. [^1]
 
 > [!IMPORTANT]
-> It is clear from looking at the last row of this matrix, that the yaw angle ($\alpha$) has no impact in the $z$ component.
+> It is clear from looking at the last row of this matrix, that the yaw angle ($\alpha$) can not be found. This means that the yaw angle has no impact on the $z$ component. Therefore, the yaw angle has no observability with the accelerometer.
 
 
 ## Install
@@ -101,5 +110,5 @@ if __name__ == "__main__":
 
 ```
 
-### References
-[^1]: My reference https://en.wikipedia.org/wiki/Rotation_matrix
+## References
+[^1]: [3D Rotation matrices](https://en.wikipedia.org/wiki/Rotation_matrix)
