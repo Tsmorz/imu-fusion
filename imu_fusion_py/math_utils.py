@@ -22,7 +22,7 @@ def skew_matrix(vector: np.ndarray) -> np.ndarray:
     if dim == 2:
         vector = np.reshape(vector, (3,))
     if len(vector) != 3:
-        raise ValueError("Input vector must have a dimension of 3 or less.")
+        raise ValueError("Input vector must have a dimension of 3.")
 
     sk = np.array(
         [
