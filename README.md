@@ -50,9 +50,10 @@ represents a rotation whose yaw, pitch, and roll angles are $\alpha$, $\beta$ an
 ### Integrating Angular Velocities
 When dealing with rotation matrices and angular velocities, we can find the updated rotation matrices by calculating the matrix exponential.
 
-$ R_{t+1} = R_t \exp (\Omega *dt)$
+$$ R_{t+1} = R_t \exp (\Omega dt) $$
 
 where $\Omega$ represents a skew matrix:
+
 $$
 \Omega =
 \begin{bmatrix}
@@ -63,6 +64,7 @@ $$
 $$
 
 and $\exp\Omega$ is the matrix exponential found through:
+
 $$
 A = V \Lambda V^{-1}
 $$
@@ -81,7 +83,7 @@ $$
 Since $\Omega$ is diagonalizable, we use the property of the matrix exponential:
 
 $$
-e^{\Omega*dt} = V e^{\Lambda*dt} V^{-1}
+e^{\Omega dt} = V e^{\Lambda dt} V^{-1}
 $$
 
 where the exponential of a diagonal matrix is computed as:
@@ -98,11 +100,11 @@ $$
 Thus, the final result is:
 
 $$
-e^{\Omega*dt} = V
+e^{\Omega dt} = V
 \begin{bmatrix}
-    e^{\lambda_1*dt} & 0 & 0 \\
-    0 & e^{\lambda_2*dt} & 0 \\
-    0 & 0 & e^{\lambda_3*dt}
+    e^{\lambda_1 dt} & 0 & 0 \\
+    0 & e^{\lambda_2 dt} & 0 \\
+    0 & 0 & e^{\lambda_3 dt}
 \end{bmatrix}
 V^{-1}
 $$
