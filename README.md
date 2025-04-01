@@ -1,18 +1,16 @@
 # imu-fusion
 
-#### Table of Contents
+### Table of Contents
 [Background](#Background)  
 [Installation](#Install)  
 [Development](#Development)  
 [Usage](#Usage)  
 [References](#References)  
 
-## Backgrounds Information
+## Background
 The following sections cover the necessary mathematical to cover the fusion process of the IMU data.
 
-
 ### General 3D rotations
-
 A general 3D rotation matrix can be obtained from these three matrices using matrix multiplication.  For example, the product:
 
 $$
@@ -49,6 +47,65 @@ represents a rotation whose yaw, pitch, and roll angles are $\alpha$, $\beta$ an
 > [!IMPORTANT]
 > It is clear from looking at the last row of this matrix, that the yaw angle ($\alpha$) can not be found. This means that the yaw angle has no impact on the $z$ component. Therefore, the yaw angle has no observability with the accelerometer.
 
+### Integrating Angular Velocities
+When dealing with rotation matrices and angular velocities, we can find the updated rotation matrices by calculating the matrix exponential.
+
+$ R_{t+1} = R_t \exp (\Omega *dt)$
+
+where $\Omega$ represents a skew matrix:
+$$
+\Omega =
+\begin{bmatrix}
+    0 & -\omega_z & \omega_y \\
+    \omega_z & 0 & -\omega_x \\
+    -\omega_y & \omega_x & 0
+\end{bmatrix}
+$$
+
+and $\exp\Omega$ is the matrix exponential found through:
+$$
+A = V \Lambda V^{-1}
+$$
+
+where $V$ is the matrix of eigenvectors, and $\Lambda$ is the diagonal matrix of eigenvalues:
+
+$$
+\Lambda =
+\begin{bmatrix}
+    \lambda_1 & 0 & 0 \\
+    0 & \lambda_2 & 0 \\
+    0 & 0 & \lambda_3
+\end{bmatrix}
+$$
+
+Since $\Omega$ is diagonalizable, we use the property of the matrix exponential:
+
+$$
+e^{\Omega*dt} = V e^{\Lambda*dt} V^{-1}
+$$
+
+where the exponential of a diagonal matrix is computed as:
+
+$$
+e^\Lambda =
+\begin{bmatrix}
+    e^{\lambda_1} & 0 & 0 \\
+    0 & e^{\lambda_2} & 0 \\
+    0 & 0 & e^{\lambda_3}
+\end{bmatrix}
+$$
+
+Thus, the final result is:
+
+$$
+e^{\Omega*dt} = V
+\begin{bmatrix}
+    e^{\lambda_1*dt} & 0 & 0 \\
+    0 & e^{\lambda_2*dt} & 0 \\
+    0 & 0 & e^{\lambda_3*dt}
+\end{bmatrix}
+V^{-1}
+$$
 
 ## Install
 To install the library run: `pip install imu_fusion_py`
@@ -109,7 +166,6 @@ if __name__ == "__main__":
     main()
 
 ```
-## Background
 
 ## References
 [^1]: [3D Rotation matrices](https://en.wikipedia.org/wiki/Rotation_matrix)
