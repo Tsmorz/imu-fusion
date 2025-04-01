@@ -1,13 +1,13 @@
 # imu-fusion
 
 #### Table of Contents
-[Background Information](#Background Information)
-[Installation](#Install)
-[Development](#Development)
-[Usage](#Usage)
-[References](#References)
+[Background](#Background)  
+[Installation](#Install)  
+[Development](#Development)  
+[Usage](#Usage)  
+[References](#References)  
 
-## Background Information
+## Backgrounds Information
 The following sections cover the necessary mathematical to cover the fusion process of the IMU data.
 
 
@@ -109,6 +109,7 @@ if __name__ == "__main__":
     main()
 
 ```
+## Background
 
 ## References
 [^1]: [3D Rotation matrices](https://en.wikipedia.org/wiki/Rotation_matrix)
