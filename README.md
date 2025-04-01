@@ -5,6 +5,7 @@
 Here is a simple footnote[^1].
 
 A general 3D rotation matrix can be obtained from these three matrices using matrix multiplication.  For example, the product:
+
 $$
 \begin{align}
   R = R_z(\alpha) \, R_y(\beta) \, R_x(\gamma) &=
