@@ -37,8 +37,9 @@ def skew_matrix(vector: np.ndarray) -> np.ndarray:
 def align_to_acceleration(
     acceleration_vec: np.ndarray, x0: Optional[np.ndarray] = None, method: str = METHOD
 ) -> np.ndarray:
-    """Find the best roll, pitch, and yaw angles that align with the gravity vector.
+    """Find the best pitch and roll angles that align with the gravity vector.
 
+    The yaw angle is unobservable and will be ignored. Please see the README.md
     :param acceleration_vec: acceleration values in m/s^2
     :param x0: Initial guess for the rotation matrix (default: zeros)
     :param method: Optimization method (default: "nelder-mead")
