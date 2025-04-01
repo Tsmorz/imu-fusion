@@ -45,14 +45,16 @@ def align_to_acceleration(
     :return: Rotation matrix that best aligns with gravity
     """
     if x0 is None:
-        x0 = 0.01 * np.ones(3)
+        x0 = np.zeros(3)
     residual = minimize(
         fun=orientation_error,
         x0=x0,
         method=method,
         args=acceleration_vec,
-        tol=2e-3,
+        tol=1e-5,
+        options={"disp": True},
     )
+    residual.x[0] = 0.0
     return Rot.from_euler(seq=EULER_ORDER, angles=residual.x, degrees=False).as_matrix()
 
 

@@ -10,10 +10,10 @@ from imu_fusion_py.math_utils import align_to_acceleration
 @pytest.mark.parametrize(
     "gravity_alignment_vector",
     [
-        np.array([0.0, 0.0, 1.0]),
+        np.array([1.0, 0.0, 0.0]),
         np.array([0.0, 1.0, 0.0]),
         np.array([0.0, 0.0, 1.0]),
-        np.array([np.sqrt(2) / 2, np.sqrt(2) / 2, 0.0]),
+        np.array([np.sqrt(3) / 3, np.sqrt(3) / 3, np.sqrt(3) / 3]),
     ],
 )
 def test_align_to_gravity(gravity_alignment_vector) -> None:
@@ -26,3 +26,4 @@ def test_align_to_gravity(gravity_alignment_vector) -> None:
 
     # Assert
     np.testing.assert_array_almost_equal(rot[2, :], gravity_alignment_vector, decimal=3)
+    # assert 1 == 0

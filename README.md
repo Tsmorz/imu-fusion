@@ -1,27 +1,47 @@
-# LieGroupsPy
-Functions for the Lie Algebra group SE(3)
+# imu-fusion
 
-$$ SE(3) =
-\begin{bmatrix}
-    R_{11} & R_{12} & R_{13} & t_1 \\
-    R_{21} & R_{22} & R_{23} & t_2 \\
-    R_{31} & R_{32} & R_{33} & t_3 \\
-    0 & 0 & 0 & 1
-\end{bmatrix} $$
+### General 3D rotations
 
-where:
-- \( $\mathbf{R} \in SO(3) $\) is the **rotation matrix**.
-- \( $\mathbf{t} \in \mathbb{R}^3 $\) is the **translation vector**.
+Here is a simple footnote[^1].
 
-This representation is commonly used in **robotics and computer vision** for rigid body transformations.
+A general 3D rotation matrix can be obtained from these three matrices using matrix multiplication.  For example, the product:
+$$
+\begin{align}
+  R = R_z(\alpha) \, R_y(\beta) \, R_x(\gamma) &=
+  {\begin{bmatrix}
+    \cos \alpha & -\sin \alpha & 0 \\
+    \sin \alpha &  \cos \alpha & 0 \\
+              0 &            0 & 1 \\
+  \end{bmatrix}}
+  {\begin{bmatrix}
+     \cos \beta & 0 & \sin \beta \\
+              0 & 1 &          0 \\
+    -\sin \beta & 0 & \cos \beta \\
+  \end{bmatrix}}
+  {\begin{bmatrix}
+    1 &  0          &            0 \\
+    0 & \cos \gamma & -\sin \gamma \\
+    0 & \sin \gamma &  \cos \gamma \\
+  \end{bmatrix}} \\
+  &= \begin{bmatrix}
+        \cos\alpha\cos\beta &
+          \cos\alpha\sin\beta\sin\gamma - \sin\alpha\cos\gamma &
+          \cos\alpha\sin\beta\cos\gamma + \sin\alpha\sin\gamma \\
+        \sin\alpha\cos\beta &
+          \sin\alpha\sin\beta\sin\gamma + \cos\alpha\cos\gamma &
+          \sin\alpha\sin\beta\cos\gamma - \cos\alpha\sin\gamma \\
+       -\sin\beta & \cos\beta\sin\gamma & \cos\beta\cos\gamma \\
+  \end{bmatrix}
+\end{align}</math>$$
 
-<p align="center" width="80%">
-    <img width="500" alt="Screenshot 2025-03-31 at 9 37 41 AM" src="https://github.com/user-attachments/assets/15d5f56c-32f8-4e18-bb05-bf84c1b48fdc" />
-</p>
+represents a rotation whose yaw, pitch, and roll angles are $\alpha$, $\beta$ and $\gamma$, respectively. More formally, it is an intrinsic rotation whose Tait–Bryan angles are  $\alpha$, $\beta$ and $\gamma$, about axes  $x$, $y$ and $z$, respectively.
+
+> [!IMPORTANT]
+> It is clear from looking at the last row of this matrix, that the yaw angle ($\alpha$) has no impact in the $z$ component.
 
 
 ## Install
-To install the library run: `pip install lie_groups_py`
+To install the library run: `pip install imu_fusion_py`
 
 ## Development
 0. Install [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer)
@@ -79,3 +99,6 @@ if __name__ == "__main__":
     main()
 
 ```
+
+### References
+[^1]: My reference https://en.wikipedia.org/wiki/Rotation_matrix
