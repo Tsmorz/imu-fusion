@@ -48,7 +48,7 @@ represents a rotation whose yaw, pitch, and roll angles are $\alpha$, $\beta$ an
 > It is clear from looking at the last row of this matrix, that the yaw angle ($\alpha$) can not be found. This means that the yaw angle has no impact on the $z$ component. Therefore, the yaw angle has no observability with the accelerometer.
 
 ### Integrating Angular Velocities
-When dealing with rotation matrices and angular velocities, we can find the updated rotation matrices by calculating the matrix exponential.
+When dealing with rotation matrices and angular velocities, we can find the updated rotation matrices by calculating the matrix exponential. [^2]
 
 $$ R_{t+1} = R_t \exp (\Omega dt) $$
 
@@ -171,3 +171,4 @@ if __name__ == "__main__":
 
 ## References
 [^1]: [3D Rotation matrices](https://en.wikipedia.org/wiki/Rotation_matrix)
+[^2]: [Matrix Exponentials](https://en.wikipedia.org/wiki/Matrix_exponential#Diagonalizable_case)
