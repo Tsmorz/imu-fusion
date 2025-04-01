@@ -56,6 +56,7 @@ def align_to_acceleration(
         options={"disp": True},
     )
     yaw_pitch_roll = [0.0, residual.x[0], residual.x[1]]
+    logger.info(yaw_pitch_roll)
     return Rot.from_euler(seq=EULER_ORDER, angles=yaw_pitch_roll).as_matrix()
 
 
@@ -91,6 +92,9 @@ def matrix_exponential(matrix: np.ndarray, t: float = 1.0) -> np.ndarray:
         diagonal = np.diag(np.exp(eig_val * t))
         matrix_exp = eig_vec @ diagonal @ np.linalg.inv(eig_vec)
     else:
+        logger.warning(
+            "Non-diagonalizable matrix encountered. Using Jordan canonical form."
+        )
         P, J = mat.jordan_form()
         P, J = np.array(P).astype(np.float64), np.array(J).astype(np.float64)
         J = scipy.linalg.expm(t * J)
