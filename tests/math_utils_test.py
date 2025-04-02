@@ -89,7 +89,7 @@ def test_matrix_exponential_non_diagonalizable(dt) -> None:
     expected_matrix = np.array([[1.0, dt], [0.0, 1.0]])
 
     # Act
-    matrix_exp = matrix_exponential(matrix=matrix, t=dt)
+    matrix_exp = matrix_exponential(matrix=matrix, dt=dt)
 
     # Assert
     np.testing.assert_array_almost_equal(matrix_exp, expected_matrix, decimal=2)

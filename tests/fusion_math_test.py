@@ -2,13 +2,14 @@
 
 import numpy as np
 import pytest
+from lie_groups_py.se3 import SE3
 from scipy.spatial.transform import Rotation as Rot
 
 from imu_fusion_py.config.definitions import EULER_ORDER, GRAVITY
 from imu_fusion_py.fusion_math import (
-    apply_angular_velocity,
     apply_linear_acceleration,
     pitch_roll_from_acceleration,
+    predict_rotation,
     rotation_matrix_from_yaw_pitch_roll,
 )
 
@@ -45,7 +46,7 @@ def test_apply_angular_velocity(dt: float) -> None:
 
     # Act
     for _i in range(int(1 / dt)):
-        rot = apply_angular_velocity(rot, omegas, dt)
+        rot = predict_rotation(rot, omegas, dt)
 
     # Assert
     np.testing.assert_array_almost_equal(rot, np.eye(3), decimal=3)
@@ -68,19 +69,18 @@ def test_yaw_pitch_roll_to_rotation_matrix() -> None:
 def test_apply_linear_acceleration():
     """Test the apply_linear_acceleration function."""
     # Arrange
-    pos = np.array([[0.0], [0.0], [0.0]])
+    pose = SE3(xyz=np.zeros(3), rot=np.eye(3))
     vel = np.array([[0.0], [0.0], [0.0]])
-    rot = np.eye(3)
     accel = np.array([[0.0], [0.0], [GRAVITY]])
     dt = 0.01
 
     # Act
     for _i in range(int(1 / dt)):
-        pos, vel = apply_linear_acceleration(
-            pos=pos, vel=vel, rot=rot, accel_meas=accel, dt=dt
+        pose, vel = apply_linear_acceleration(
+            pose=pose, vel=vel, accel_meas=accel, dt=dt
         )
 
     # Assert
     np.testing.assert_array_almost_equal(
-        pos, np.array([[0.0], [0.0], [0.0]]), decimal=3
+        pose.trans, np.array([[0.0], [0.0], [0.0]]), decimal=3
     )

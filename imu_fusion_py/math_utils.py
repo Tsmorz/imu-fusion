@@ -28,11 +28,11 @@ def skew_matrix(vector: np.ndarray) -> np.ndarray:
     return sk
 
 
-def matrix_exponential(matrix: np.ndarray, t: float = 1.0) -> np.ndarray:
+def matrix_exponential(matrix: np.ndarray, dt: float = 1.0) -> np.ndarray:
     """Calculate the matrix exponential of a given matrix.
 
     :param matrix: A square matrix represented as a numpy array.
-    :param t: The time parameter.
+    :param dt: The delta time parameter.
     :return: The matrix exponential of the given matrix.
     """
     if np.shape(matrix)[0] != np.shape(matrix)[1]:
@@ -44,7 +44,7 @@ def matrix_exponential(matrix: np.ndarray, t: float = 1.0) -> np.ndarray:
     mat = Matrix(matrix)
     if mat.is_diagonalizable():
         eig_val, eig_vec = np.linalg.eig(matrix)
-        diagonal = np.diag(np.exp(eig_val * t))
+        diagonal = np.diag(np.exp(eig_val * dt))
         matrix_exp = eig_vec @ diagonal @ np.linalg.inv(eig_vec)
     else:
         logger.warning(
@@ -52,7 +52,7 @@ def matrix_exponential(matrix: np.ndarray, t: float = 1.0) -> np.ndarray:
         )
         P, J = mat.jordan_form()
         P, J = np.array(P).astype(np.float64), np.array(J).astype(np.float64)
-        J = scipy.linalg.expm(t * J)
+        J = scipy.linalg.expm(dt * J)
         matrix_exp = P @ J @ np.linalg.inv(P)
     return matrix_exp.real
 

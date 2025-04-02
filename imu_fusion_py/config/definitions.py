@@ -9,4 +9,4 @@ IMU_DATA_FILENAME = "imu-data.txt"
 FIG_SIZE = (14.5, 8.0)
 LEGEND_LOC = "upper right"
 
-METHOD = "nelder-mead"
+NELDER_MEAD_METHOD = "nelder-mead"
