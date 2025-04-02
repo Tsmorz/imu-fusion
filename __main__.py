@@ -15,7 +15,7 @@ from imu_fusion_py.fusion_math import (
     apply_angular_velocity,
     apply_linear_acceleration,
     pitch_roll_from_acceleration,
-    yaw_pitch_roll_to_rotation_matrix,
+    rotation_matrix_from_yaw_pitch_roll,
 )
 from imu_fusion_py.imu_data import ImuIterator
 from imu_fusion_py.imu_parser import ImuParser
@@ -23,28 +23,28 @@ from imu_fusion_py.imu_parser import ImuParser
 
 def main(show_plot: bool = False) -> None:
     """Run main pipeline."""
-    home = os.path.expanduser("~")
-    imu_filepath = os.path.join(home, "Desktop", IMU_DATA_FILENAME)
+    cwd = os.getcwd()
+    imu_filepath = os.path.join(
+        cwd, "tests", "test_data", "mag-cal-" + IMU_DATA_FILENAME
+    )
     imu_data = ImuParser().parse_filepath(imu_filepath)
-
     if show_plot:
         imu_data.plot()
 
     gyr_bias = imu_data.get_idx(0)[3:6]
     pitch_roll_init = np.zeros(2)
-    pos, vel = np.zeros((3, 1)), np.zeros((3, 1))
+    pos, vel, t = np.zeros((3, 1)), np.zeros((3, 1)), 0.0
     for measurement in ImuIterator(imu_data):
         acc = measurement[0:3]
         gyr = measurement[3:6] - gyr_bias
+        dt = measurement[9, 0] - t
         t = measurement[9, 0]
-        dt = 0.01
 
-        yaw = 0.0
-        pitch, roll, _ = pitch_roll_from_acceleration(
-            acceleration_vec=acc, pitch_roll_init=pitch_roll_init
-        )
-        yaw_pitch_roll_init = np.array([yaw, pitch, roll])
-        rot = yaw_pitch_roll_to_rotation_matrix(ypr=yaw_pitch_roll_init)
+        pitch, roll, _ = pitch_roll_from_acceleration(acc, pitch_roll_init)
+        pitch_roll_init = np.array([pitch, roll])
+
+        yaw_pitch_roll_init = np.array([0.0, pitch, roll])
+        rot = rotation_matrix_from_yaw_pitch_roll(ypr=yaw_pitch_roll_init)
 
         pos, vel = apply_linear_acceleration(
             pos=pos, vel=vel, rot=rot, accel_meas=acc, dt=dt

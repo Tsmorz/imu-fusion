@@ -3,7 +3,6 @@
 from typing import Optional
 
 import numpy as np
-from loguru import logger
 from scipy.optimize import minimize
 from scipy.spatial.transform import Rotation as Rot
 
@@ -97,20 +96,10 @@ def apply_linear_acceleration(
     return pos, vel
 
 
-def yaw_pitch_roll_to_rotation_matrix(ypr: np.ndarray) -> np.ndarray:
+def rotation_matrix_from_yaw_pitch_roll(ypr: np.ndarray) -> np.ndarray:
     """Calculate the rotation matrix from yaw, pitch, and roll angles.
 
     :param ypr: yaw, pitch, and roll angles in radians
     :return: Rotation matrix
     """
     return Rot.from_euler(seq=EULER_ORDER, angles=ypr).as_matrix()
-
-
-if __name__ == "__main__":  # pragma: no cover
-    acc = np.array([[GRAVITY / 3], [0.0], [GRAVITY / 3]])
-    pitch, roll, err = pitch_roll_from_acceleration(acceleration_vec=acc)
-    logger.info(
-        f"Pitch: {np.rad2deg(pitch):.3f} degrees, "
-        f"Roll: {np.rad2deg(roll):.3f} degrees, "
-        f"Error: {err:.3f} m/s^2"
-    )

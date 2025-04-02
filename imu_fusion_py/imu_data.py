@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
 
-from imu_fusion_py.config.definitions import FIG_SIZE
+from imu_fusion_py.config.definitions import FIG_SIZE, LEGEND_LOC
 
 
 @dataclass
@@ -73,34 +73,31 @@ class ImuData:
         :param figsize: Figure size.
         :return: None
         """
-        plt.figure(figsize=figsize)
-        plt.plot(self.time, self.acc.x, label="acc_x")
-        plt.plot(self.time, self.acc.y, label="acc_y")
-        plt.plot(self.time, self.acc.z, label="acc_z")
-        plt.legend()
-        plt.title("IMU Accelerometer Data")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Acceleration (m/s^2)")
-        plt.grid(True)
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=figsize, sharex=True)
 
-        plt.figure(figsize=figsize)
-        plt.plot(self.time, self.gyr.x, label="gyr_x")
-        plt.plot(self.time, self.gyr.y, label="gyr_y")
-        plt.plot(self.time, self.gyr.z, label="gyr_z")
-        plt.legend()
-        plt.title("IMU Gyroscope Data")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Angular Velocity (rad/s)")
-        plt.grid(True)
+        ax1.plot(self.time, self.acc.x, label="acc_x")
+        ax1.plot(self.time, self.acc.y, label="acc_y")
+        ax1.plot(self.time, self.acc.z, label="acc_z")
+        ax1.legend(loc=LEGEND_LOC)
+        ax1.set_title("IMU Accelerometer Data")
+        ax1.set_ylabel("Acceleration (m/s^2)")
+        ax1.grid(True)
 
-        plt.figure(figsize=figsize)
-        plt.plot(self.time, self.mag.x, label="mag_x")
-        plt.plot(self.time, self.mag.y, label="mag_y")
-        plt.plot(self.time, self.mag.z, label="mag_z")
-        plt.legend()
+        ax2.plot(self.time, self.gyr.x, label="gyr_x")
+        ax2.plot(self.time, self.gyr.y, label="gyr_y")
+        ax2.plot(self.time, self.gyr.z, label="gyr_z")
+        ax2.legend(loc=LEGEND_LOC)
+        ax2.set_title("IMU Gyroscope Data")
+        ax2.set_xlabel("Time (s)")
+        ax2.set_ylabel("Angular Velocity (rad/s)")
+        ax2.grid(True)
+
+        fig = plt.figure(figsize=(8, 8)).add_subplot(111, projection="3d")
+        plt.plot(self.mag.x, self.mag.y, self.mag.z, label="mag_xyz")
         plt.title("IMU Magnetometer Data")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Magnetic Field (milliGauss)")
+        fig.set_xlabel("X-axis (milliGauss)")
+        fig.set_ylabel("Y-axis (milliGauss)")
+        fig.set_zlabel("Z-axis (milliGauss)")
         plt.grid(True)
         plt.show()
 

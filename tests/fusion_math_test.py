@@ -9,7 +9,7 @@ from imu_fusion_py.fusion_math import (
     apply_angular_velocity,
     apply_linear_acceleration,
     pitch_roll_from_acceleration,
-    yaw_pitch_roll_to_rotation_matrix,
+    rotation_matrix_from_yaw_pitch_roll,
 )
 
 
@@ -59,7 +59,7 @@ def test_yaw_pitch_roll_to_rotation_matrix() -> None:
     roll = 0.0
 
     # Act
-    rot = yaw_pitch_roll_to_rotation_matrix(np.array([yaw, pitch, roll]))
+    rot = rotation_matrix_from_yaw_pitch_roll(np.array([yaw, pitch, roll]))
 
     # Assert
     np.testing.assert_array_almost_equal(rot, np.eye(3), decimal=3)
