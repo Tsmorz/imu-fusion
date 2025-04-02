@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "imu_fusion_py"
-version = "0.1.1dev"
+version = "0.1.2"
 description = "Functions fusing IMU data to estimate orientation."
 authors = ["Tsmorz <tonysmoragiewicz@gmail.com>"]
 readme = "README.md"
-package-mode = false
+package-mode = true
 
 [tool.poetry.dependencies]
 python = "^3.13"
