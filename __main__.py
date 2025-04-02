@@ -21,12 +21,8 @@ from imu_fusion_py.imu_data import ImuIterator
 from imu_fusion_py.imu_parser import ImuParser
 
 
-def main(show_plot: bool = False) -> None:
+def main(imu_filepath: str, show_plot: bool = False) -> None:
     """Run main pipeline."""
-    cwd = os.getcwd()
-    imu_filepath = os.path.join(
-        cwd, "tests", "test_data", "mag-cal-" + IMU_DATA_FILENAME
-    )
     imu_data = ImuParser().parse_filepath(imu_filepath)
     if show_plot:
         imu_data.plot()
@@ -73,5 +69,27 @@ if __name__ == "__main__":  # pragma: no cover
         action="store_true",
         help="Plot the raw IMU data",
     )
+    parser.add_argument(
+        "-i",
+        "--int",
+        required=True,
+        type=int,
+        action="store",
+        help="Process test data",
+    )
     args = parser.parse_args()
-    main(show_plot=args.plot)
+
+    cwd = os.getcwd()
+
+    pipeline = args.int
+    if pipeline == 1:
+        imu_filename = "mag-cal-" + IMU_DATA_FILENAME
+    elif pipeline == 2:
+        imu_filename = "moving-" + IMU_DATA_FILENAME
+    elif pipeline == 3:
+        imu_filename = "stationary-" + IMU_DATA_FILENAME
+    else:
+        imu_filename = IMU_DATA_FILENAME
+    imu_filepath = os.path.join(cwd, "tests", "test_data", imu_filename)
+
+    main(imu_filepath, show_plot=args.plot)
