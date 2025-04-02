@@ -23,7 +23,7 @@ from imu_fusion_py.fusion_math import (
         np.array([[0.0], [np.sqrt(2) / 2], [np.sqrt(2) / 2]]),
     ],
 )
-def test_pitch_roll_from_acceleration(gravity_alignment_vector) -> None:
+def test_pitch_roll_from_acceleration_optimize(gravity_alignment_vector) -> None:
     """Assert that align_to_gravity function returns a rotation matrix."""
     # Arrange
     acc_vector = GRAVITY * gravity_alignment_vector
@@ -37,8 +37,33 @@ def test_pitch_roll_from_acceleration(gravity_alignment_vector) -> None:
     np.testing.assert_array_almost_equal(last_row, gravity_alignment_vector, decimal=3)
 
 
+@pytest.mark.parametrize(
+    "gravity_alignment_vector",
+    [
+        np.array([[1.0], [0.0], [0.0]]),
+        np.array([[0.0], [1.0], [0.0]]),
+        np.array([[0.0], [0.0], [1.0]]),
+        np.array([[0.0], [np.sqrt(2) / 2], [np.sqrt(2) / 2]]),
+    ],
+)
+def test_pitch_roll_from_acceleration_naive(gravity_alignment_vector) -> None:
+    """Assert that align_to_gravity function returns a rotation matrix."""
+    # Arrange
+    acc_vector = GRAVITY * gravity_alignment_vector
+
+    # Act
+    pitch, roll, err = pitch_roll_from_acceleration(
+        acceleration_vec=acc_vector, method=None
+    )
+
+    # Assert
+    rot = Rot.from_euler(seq=EULER_ORDER, angles=[0.0, pitch, roll]).as_matrix()
+    last_row = np.reshape(rot[2, :], (3, 1))
+    np.testing.assert_array_almost_equal(last_row, gravity_alignment_vector, decimal=3)
+
+
 @pytest.mark.parametrize("dt", [0.01, 0.1, 1.0])
-def test_apply_angular_velocity(dt: float) -> None:
+def test_predict_rotation(dt: float) -> None:
     """Test the apply_angular_velocity function."""
     # Arrange
     rot = np.eye(3)
@@ -50,6 +75,36 @@ def test_apply_angular_velocity(dt: float) -> None:
 
     # Assert
     np.testing.assert_array_almost_equal(rot, np.eye(3), decimal=3)
+
+
+def test_predict_rotation_methods_equal() -> None:
+    """Test that the apply_angular_velocity function methods are equal."""
+    # Arrange
+    rot = np.eye(3)
+    quat = np.array([[1.0], [0.0], [0.0], [0.0]])
+    omegas = np.array([[np.pi, np.pi, np.pi]])
+    dt = 0.01
+
+    # Act
+    for _i in range(100):
+        rot = predict_rotation(orientation=rot, angular_velocity=omegas, dt=dt)
+        quat = predict_rotation(orientation=quat, angular_velocity=omegas, dt=dt)
+
+    # Assert
+    rot_from_quat = Rot.from_quat(np.reshape(quat, (4,)), scalar_first=True)
+    np.testing.assert_array_almost_equal(rot, rot_from_quat.as_matrix(), decimal=3)
+
+
+def test_predict_rotation_invalid_input():
+    """Test the predict_rotation function with invalid inputs."""
+    # Arrange
+    rot = np.eye(4)
+    omegas = np.array([[0.0, 0.0, 2 * np.pi]])
+    dt = 0.01
+
+    # Act and assert
+    with pytest.raises(ValueError):
+        predict_rotation(rot, omegas, dt)
 
 
 def test_yaw_pitch_roll_to_rotation_matrix() -> None:
