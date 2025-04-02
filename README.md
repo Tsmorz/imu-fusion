@@ -48,7 +48,7 @@ represents a rotation whose yaw, pitch, and roll angles are $\alpha$, $\beta$ an
 > It is clear from looking at the last row of this matrix, that the yaw angle ($\alpha$) can not be found. This means that the yaw angle has no impact on the $z$ component. Therefore, the yaw angle has no observability with the accelerometer.
 
 > [!WARNING]
-> Gimbal Lock: when the pitch angle becomes +/- 90 degrees, the second and third elements of that row are always zero. This causes problems no change in roll will have an affect.
+> Gimbal Lock: when the pitch angle becomes +/- 90 degrees, the second and third elements of that row are always zero. This means that no change in roll will have an affect on the orientation.
 
 ### Integrating Angular Velocities
 When dealing with rotation matrices and angular velocities, we can find the updated rotation matrices by calculating the matrix exponential. [^2]
