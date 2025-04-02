@@ -18,7 +18,7 @@ sympy = "^1.13.3"
 autograd = "^1.7.0"
 scipy = "^1.15.2"
 pandas = "^2.2.3"
-lie-groups-py = "^0.1.5"
+lie-groups-py = "^0.2.0"
 
 
 [build-system]
@@ -46,7 +46,8 @@ lint.select = [
     "PL",   # pylint (general best practices)
     "RUF",  # Ruff-specific rules
     "T20",
-    "F841",
+    "F841",  # unused variable
+    "ERA001"  # commented out code
 ]
 
 # Exclude some noisy or unnecessary rules

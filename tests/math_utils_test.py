@@ -101,6 +101,23 @@ def test_matrix_exponential_zeros() -> None:
     np.testing.assert_array_almost_equal(exp_matrix, np.eye(3), decimal=3)
 
 
+@pytest.mark.parametrize(
+    "dt",
+    [0.001, 0.01, 0.1, 1.0],
+)
+def test_matrix_exponential_non_diagonalizable(dt) -> None:
+    """Assert that matrix_exponential returns the identity matrix for t=0."""
+    # Arrange
+    matrix = np.array([[0, 1], [0, 0]])
+    expected_matrix = np.array([[1.0, dt], [0.0, 1.0]])
+
+    # Act
+    matrix_exp = matrix_exponential(matrix=matrix, t=dt)
+
+    # Assert
+    np.testing.assert_array_almost_equal(matrix_exp, expected_matrix, decimal=2)
+
+
 def test_symmetrize_matrix() -> None:
     """Assert that symmetrize_matrix returns a symmetric matrix."""
     # Arrange

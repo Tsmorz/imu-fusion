@@ -114,39 +114,3 @@ def symmetrize_matrix(matrix: np.ndarray) -> np.ndarray:
         raise ValueError(msg)
 
     return (matrix + matrix.T) / 2
-
-
-def apply_angular_velocity(
-    matrix: np.ndarray, omegas: np.ndarray, dt: float
-) -> np.ndarray:
-    """Apply angular velocity vector to a rotation matrix.
-
-    :param matrix: A 3x3 rotation matrix.
-    :param omegas: Angular velocity vector represented as a numpy array.
-    :param dt: Time interval in seconds.
-    :return: Updated rotation matrix and new angular velocity vector.
-    """
-    omega_exp = matrix_exponential(skew_matrix(omegas), t=dt)
-    return matrix @ omega_exp
-
-
-def apply_linear_acceleration(
-    pos: np.ndarray,
-    vel: np.ndarray,
-    rot: np.ndarray,
-    accel: np.ndarray,
-    dt: float,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Apply linear velocity vector to a rotation matrix, position, and velocity.
-
-    :param pos: Current position vector represented as a numpy array.
-    :param vel: Current velocity vector represented as a numpy array.
-    :param rot: Current rotation matrix.
-    :param accel: Linear acceleration vector represented as a numpy array.
-    :param dt: Time interval in seconds.
-    :return: Updated position and velocity vectors.
-    """
-    residual = accel - GRAVITY * rot @ np.array([[0], [0], [1]])
-    vel += residual * dt
-    pos += vel * dt
-    return pos, vel, rot

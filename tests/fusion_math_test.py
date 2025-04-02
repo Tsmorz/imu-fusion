@@ -5,7 +5,10 @@ import pytest
 from scipy.spatial.transform import Rotation as Rot
 
 from imu_fusion_py.config.definitions import EULER_ORDER, GRAVITY
-from imu_fusion_py.fusion_math import pitch_roll_from_acceleration
+from imu_fusion_py.fusion_math import (
+    apply_angular_velocity,
+    pitch_roll_from_acceleration,
+)
 
 
 @pytest.mark.parametrize(
@@ -29,3 +32,18 @@ def test_pitch_roll_from_acceleration(gravity_alignment_vector) -> None:
     rot = Rot.from_euler(seq=EULER_ORDER, angles=[0.0, pitch, roll]).as_matrix()
     last_row = np.reshape(rot[2, :], (3, 1))
     np.testing.assert_array_almost_equal(last_row, gravity_alignment_vector, decimal=3)
+
+
+@pytest.mark.parametrize("dt", [0.01, 0.1, 1.0])
+def test_apply_angular_velocity(dt: float) -> None:
+    """Test the apply_angular_velocity function."""
+    # Arrange
+    rot = np.eye(3)
+    omegas = np.array([[0.0, 0.0, 2 * np.pi]])
+
+    # Act
+    for _i in range(int(1 / dt)):
+        rot = apply_angular_velocity(rot, omegas, dt)
+
+    # Assert
+    np.testing.assert_array_almost_equal(rot, np.eye(3), decimal=3)

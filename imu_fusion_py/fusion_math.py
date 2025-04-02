@@ -7,6 +7,21 @@ from loguru import logger
 from scipy.optimize import minimize
 
 from imu_fusion_py.config.definitions import GRAVITY, METHOD
+from imu_fusion_py.math_utils import matrix_exponential, skew_matrix
+
+
+def apply_angular_velocity(
+    matrix: np.ndarray, omegas: np.ndarray, dt: float
+) -> np.ndarray:
+    """Apply angular velocity vector to a rotation matrix.
+
+    :param matrix: A 3x3 rotation matrix.
+    :param omegas: Angular velocity vector represented as a numpy array.
+    :param dt: Time interval in seconds.
+    :return: Updated rotation matrix and new angular velocity vector.
+    """
+    omega_exp = matrix_exponential(skew_matrix(omegas), t=dt)
+    return matrix @ omega_exp
 
 
 def pitch_roll_from_acceleration(
@@ -28,7 +43,7 @@ def pitch_roll_from_acceleration(
         method=method,
         args=acceleration_vec,
         tol=1e-3,
-        options={"disp": True},
+        options={"disp": False},
     )
     pitch, roll = residual.x[0], residual.x[1]
     error = residual.fun
@@ -57,16 +72,33 @@ def pitch_roll_alignment_error(
     return float(error)
 
 
-def main():
-    """Run a simple test case."""
+def apply_linear_acceleration(
+    pos: np.ndarray,
+    vel: np.ndarray,
+    rot: np.ndarray,
+    accel: np.ndarray,
+    dt: float,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Apply linear velocity vector to a rotation matrix, position, and velocity.
+
+    :param pos: Current position vector represented as a numpy array.
+    :param vel: Current velocity vector represented as a numpy array.
+    :param rot: Current rotation matrix.
+    :param accel: Linear acceleration vector represented as a numpy array.
+    :param dt: Time interval in seconds.
+    :return: Updated position and velocity vectors.
+    """
+    residual = accel - GRAVITY * rot @ np.array([[0], [0], [1]])
+    vel += residual * dt
+    pos += vel * dt
+    return pos, vel, rot
+
+
+if __name__ == "__main__":  # pragma: no cover
     acc = np.array([[GRAVITY / 3], [0.0], [GRAVITY / 3]])
-    pitch, roll, error = pitch_roll_from_acceleration(acceleration_vec=acc)
+    pitch, roll, err = pitch_roll_from_acceleration(acceleration_vec=acc)
     logger.info(
         f"Pitch: {np.rad2deg(pitch):.3f} degrees, "
         f"Roll: {np.rad2deg(roll):.3f} degrees, "
-        f"Error: {error:.3f} m/s^2"
+        f"Error: {err:.3f} m/s^2"
     )
-
-
-if __name__ == "__main__":
-    main()

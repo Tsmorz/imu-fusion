@@ -12,8 +12,9 @@ from imu_fusion_py.config.definitions import (
     GRAVITY,
     IMU_DATA_FILENAME,
 )
+from imu_fusion_py.fusion_math import apply_angular_velocity
 from imu_fusion_py.imu_parser import ImuParser
-from imu_fusion_py.math_utils import align_to_acceleration, apply_angular_velocity
+from imu_fusion_py.math_utils import align_to_acceleration
 
 
 def main(show_plot: bool = False) -> None:
@@ -52,7 +53,7 @@ def main(show_plot: bool = False) -> None:
         acc = residual
         vel += acc * dt
         pos += vel * dt + acc * dt**2
-        # logger.info(f"Residual: {residual.T} m/s**2")
+        logger.info(f"Residual: {residual.T} m/s**2")
 
         rot_from_gyr = apply_angular_velocity(matrix=rot_from_gyr, omegas=gyr, dt=dt)
 

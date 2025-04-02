@@ -431,14 +431,14 @@ files = [
 
 [[package]]
 name = "lie-groups-py"
-version = "0.1.7"
+version = "0.2.0"
 description = "Functions for the lie groups SE(2), SO(2), and SO(3), and SE(3)."
 optional = false
 python-versions = "<4.0,>=3.13"
 groups = ["main"]
 files = [
-    {file = "lie_groups_py-0.1.7-py3-none-any.whl", hash = "sha256:2f52a3ee6e833bbb4fa1859617dcaacc24873baea3f1000568102262bf7a0908"},
-    {file = "lie_groups_py-0.1.7.tar.gz", hash = "sha256:a0776441fd49a34466790ddb6828bc4821f3c480863526e11b4a96c3d4cfc246"},
+    {file = "lie_groups_py-0.2.0-py3-none-any.whl", hash = "sha256:4b9d349c00f07019c73c1799421e53b41282102ab76108dc820504f0c15d48c5"},
+    {file = "lie_groups_py-0.2.0.tar.gz", hash = "sha256:09ae3697727c7e3578e0fa5c832dc2ebb60f2866d44050e79f2722e36109cb83"},
 ]
 
 [package.dependencies]
@@ -1151,4 +1151,4 @@ dev = ["black (>=19.3b0) ; python_version >= \"3.6\"", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13"
-content-hash = "f75c781e013a0d8b1fa012c558f3b837df0bd70ec89357e72f346db46c59c022"
+content-hash = "71e51852613dc7cecbbb23c6d2dcab6bf9d324d3073071efb1f446a0d223c146"
