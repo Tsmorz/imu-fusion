@@ -7,7 +7,9 @@ from scipy.spatial.transform import Rotation as Rot
 from imu_fusion_py.config.definitions import EULER_ORDER, GRAVITY
 from imu_fusion_py.fusion_math import (
     apply_angular_velocity,
+    apply_linear_acceleration,
     pitch_roll_from_acceleration,
+    yaw_pitch_roll_to_rotation_matrix,
 )
 
 
@@ -47,3 +49,38 @@ def test_apply_angular_velocity(dt: float) -> None:
 
     # Assert
     np.testing.assert_array_almost_equal(rot, np.eye(3), decimal=3)
+
+
+def test_yaw_pitch_roll_to_rotation_matrix() -> None:
+    """Test the yaw_pitch_roll_to_rotation_matrix function."""
+    # Arrange
+    yaw = 0.0
+    pitch = 0.0
+    roll = 0.0
+
+    # Act
+    rot = yaw_pitch_roll_to_rotation_matrix(np.array([yaw, pitch, roll]))
+
+    # Assert
+    np.testing.assert_array_almost_equal(rot, np.eye(3), decimal=3)
+
+
+def test_apply_linear_acceleration():
+    """Test the apply_linear_acceleration function."""
+    # Arrange
+    pos = np.array([[0.0], [0.0], [0.0]])
+    vel = np.array([[0.0], [0.0], [0.0]])
+    rot = np.eye(3)
+    accel = np.array([[0.0], [0.0], [GRAVITY]])
+    dt = 0.01
+
+    # Act
+    for _i in range(int(1 / dt)):
+        pos, vel = apply_linear_acceleration(
+            pos=pos, vel=vel, rot=rot, accel_meas=accel, dt=dt
+        )
+
+    # Assert
+    np.testing.assert_array_almost_equal(
+        pos, np.array([[0.0], [0.0], [0.0]]), decimal=3
+    )

@@ -9,12 +9,16 @@ from scipy.spatial.transform import Rotation as Rot
 
 from imu_fusion_py.config.definitions import (
     EULER_ORDER,
-    GRAVITY,
     IMU_DATA_FILENAME,
 )
-from imu_fusion_py.fusion_math import apply_angular_velocity
+from imu_fusion_py.fusion_math import (
+    apply_angular_velocity,
+    apply_linear_acceleration,
+    pitch_roll_from_acceleration,
+    yaw_pitch_roll_to_rotation_matrix,
+)
+from imu_fusion_py.imu_data import ImuIterator
 from imu_fusion_py.imu_parser import ImuParser
-from imu_fusion_py.math_utils import align_to_acceleration
 
 
 def main(show_plot: bool = False) -> None:
@@ -26,42 +30,37 @@ def main(show_plot: bool = False) -> None:
     if show_plot:
         imu_data.plot()
 
-    data = imu_data.get_idx(0)
-    rot = align_to_acceleration(acceleration_vec=data[0:3], x0=np.zeros(3))
+    gyr_bias = imu_data.get_idx(0)[3:6]
+    pitch_roll_init = np.zeros(2)
+    pos, vel = np.zeros((3, 1)), np.zeros((3, 1))
+    for measurement in ImuIterator(imu_data):
+        acc = measurement[0:3]
+        gyr = measurement[3:6] - gyr_bias
+        t = measurement[9, 0]
+        dt = 0.01
 
-    rot_from_gyr = rot
-    data = imu_data.get_idx(0)
-    gyr_bias = data[3:6]
-    x0 = np.zeros(3)
-    dt = 0.01
-    pos = np.zeros((3, 1))
-    vel = np.zeros((3, 1))
-    for ii, t in enumerate(imu_data.time):
-        data = imu_data.get_idx(ii)
-        acc = data[0:3]
-        gyr = data[3:6] - gyr_bias
-
-        rot_from_acc = align_to_acceleration(
-            acceleration_vec=acc, x0=x0, method="Powell"
+        yaw = 0.0
+        pitch, roll, _ = pitch_roll_from_acceleration(
+            acceleration_vec=acc, pitch_roll_init=pitch_roll_init
         )
-        x0 = Rot.from_matrix(rot_from_acc).as_euler(EULER_ORDER, degrees=False)
+        yaw_pitch_roll_init = np.array([yaw, pitch, roll])
+        rot = yaw_pitch_roll_to_rotation_matrix(ypr=yaw_pitch_roll_init)
 
-        g_body_frame = GRAVITY * rot_from_acc @ np.array([[0], [0], [1]])
-        g_body_frame[1] = -g_body_frame[1]
-        residual = acc - g_body_frame
+        pos, vel = apply_linear_acceleration(
+            pos=pos, vel=vel, rot=rot, accel_meas=acc, dt=dt
+        )
+        rot_from_gyr = apply_angular_velocity(matrix=rot, omegas=gyr, dt=dt)
 
-        acc = residual
-        vel += acc * dt
-        pos += vel * dt + acc * dt**2
-        logger.info(f"Residual: {residual.T} m/s**2")
-
-        rot_from_gyr = apply_angular_velocity(matrix=rot_from_gyr, omegas=gyr, dt=dt)
-
+        # Print the results
         logger.warning(f"Comparing Acc and Gyr at t={t:.3f} sec")
-        ypr = Rot.from_matrix(rot_from_acc).as_euler(EULER_ORDER, degrees=True)
-        logger.info(f"Acc: {ypr}")
+
+        ypr = Rot.from_matrix(rot).as_euler(EULER_ORDER, degrees=True)
+        ypr_str = np.array2string(ypr, precision=2, suppress_small=True)
+        logger.info(f"Acc: {ypr_str}")
+
         ypr = Rot.from_matrix(rot_from_gyr).as_euler(EULER_ORDER, degrees=True)
-        logger.info(f"Gyr: {ypr}")
+        ypr_str = np.array2string(ypr, precision=2, suppress_small=True)
+        logger.info(f"Gyr: {ypr_str}")
 
 
 if __name__ == "__main__":  # pragma: no cover
@@ -75,5 +74,4 @@ if __name__ == "__main__":  # pragma: no cover
         help="Plot the raw IMU data",
     )
     args = parser.parse_args()
-
     main(show_plot=args.plot)

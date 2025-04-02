@@ -1,15 +1,9 @@
 """Add a doc string to my files."""
 
-from typing import Optional
-
 import numpy as np
 import scipy
 from loguru import logger
-from scipy.optimize import minimize
-from scipy.spatial.transform import Rotation as Rot
 from sympy import Matrix
-
-from imu_fusion_py.config.definitions import EULER_ORDER, GRAVITY, METHOD
 
 
 def skew_matrix(vector: np.ndarray) -> np.ndarray:
@@ -32,45 +26,6 @@ def skew_matrix(vector: np.ndarray) -> np.ndarray:
         ]
     )
     return sk
-
-
-def align_to_acceleration(
-    acceleration_vec: np.ndarray, x0: Optional[np.ndarray] = None, method: str = METHOD
-) -> np.ndarray:
-    """Find the best pitch and roll angles that align with the gravity vector.
-
-    The yaw angle is unobservable and will be ignored. Please see the README.md
-    :param acceleration_vec: acceleration values in m/s^2
-    :param x0: Initial guess for the rotation matrix (default: zeros)
-    :param method: Optimization method (default: "nelder-mead")
-    :return: Rotation matrix that best aligns with gravity
-    """
-    if x0 is None:
-        x0 = np.zeros(2)
-    residual = minimize(
-        fun=orientation_error,
-        x0=x0,
-        method=method,
-        args=acceleration_vec,
-        tol=1e-3,
-        options={"disp": True},
-    )
-    yaw_pitch_roll = [0.0, residual.x[0], residual.x[1]]
-    logger.info(yaw_pitch_roll)
-    return Rot.from_euler(seq=EULER_ORDER, angles=yaw_pitch_roll).as_matrix()
-
-
-def orientation_error(pitch_roll_angles: np.ndarray, g_vector: np.ndarray) -> float:
-    """Find the orientation that would best align with the gravity vector.
-
-    :param pitch_roll_angles: Roll, pitch, and yaw angles in degrees
-    :param g_vector: Gravity vector
-    :return: Error between the gravity vector and the projected vector in the m/s^2
-    """
-    angles = np.hstack(([0.0], pitch_roll_angles))
-    rot = Rot.from_euler(seq=EULER_ORDER, angles=angles, degrees=False).as_matrix()
-    error = np.linalg.norm(np.reshape(g_vector, (3,)) - GRAVITY * rot[2, :])
-    return float(error)
 
 
 def matrix_exponential(matrix: np.ndarray, t: float = 1.0) -> np.ndarray:

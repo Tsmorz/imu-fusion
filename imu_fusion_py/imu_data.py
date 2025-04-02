@@ -59,7 +59,12 @@ class ImuData:
     def get_idx(self, idx: int) -> np.ndarray:
         """Get a column vector of all IMU data at a specific index."""
         return np.vstack(
-            (self.acc.get_idx(idx), self.gyr.get_idx(idx), self.mag.get_idx(idx))
+            (
+                self.acc.get_idx(idx),
+                self.gyr.get_idx(idx),
+                self.mag.get_idx(idx),
+                self.time[idx],
+            )
         )
 
     def plot(self, figsize: tuple[float, float] = FIG_SIZE) -> None:  # pragma: no cover
@@ -98,3 +103,24 @@ class ImuData:
         plt.ylabel("Magnetic Field (milliGauss)")
         plt.grid(True)
         plt.show()
+
+
+class ImuIterator:
+    """Create an iterator for IMU data."""
+
+    def __init__(self, data: ImuData):
+        self.data = data
+        self.index = 0
+
+    def __iter__(self):
+        """Make sure the object is iterable."""
+        return self
+
+    def __next__(self):
+        """Return the next IMU measurement."""
+        if self.index < len(self.data.time):
+            result = self.data.get_idx(self.index)
+            self.index += 1
+            return result
+        else:
+            raise StopIteration
