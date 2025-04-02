@@ -1,5 +1,9 @@
 # imu-fusion
 
+> [!NOTE]  
+> This repo serves as an educational tool to learn about IMU sensor fusion while also functioning as a sensor fusion toolbox for implementation on real devices. Please feel free to offer suggestions or comments about the functionality and documentation. Any feedback is greatly appreciated!
+
+
 ### Table of Contents
 [Background](#Background)  
 [Installation](#Install)  
