@@ -40,7 +40,7 @@ def main(imu_filepath: str, show_plot: bool = False) -> None:
     pose = SE3(xyz=np.zeros(3), rot=np.eye(3))
     vel = np.zeros((3, 1))
 
-    quat = Rot.from_matrix(matrix=pose.rot).as_quat(scalar_first=True)
+    quat = Rot.from_matrix(matrix=pose.rot).as_quat()
     quat = np.reshape(quat, (4, 1))
     measurements = ImuIterator(imu_data)
     t_old = 0
@@ -77,7 +77,7 @@ def main(imu_filepath: str, show_plot: bool = False) -> None:
             plt.pause(0.01)
     plt.show()
 
-    rot_from_quat = Rot.from_quat(np.reshape(quat, (4,)), scalar_first=True).as_matrix()
+    rot_from_quat = Rot.from_quat(np.reshape(quat, (4,))).as_matrix()
     rot_from_quat_str = np.array2string(
         rot_from_quat, precision=3, suppress_small=False
     )

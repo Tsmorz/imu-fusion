@@ -116,22 +116,35 @@ def rotation_matrix_from_yaw_pitch_roll(ypr: np.ndarray) -> np.ndarray:
     return Rot.from_euler(seq=EULER_ORDER, angles=ypr).as_matrix()
 
 
-def omega_quat(angular_velocity: np.ndarray, dt: float) -> np.ndarray:
+def omega_quat(
+    angular_velocity: np.ndarray, dt: float, scalar_first: bool = False
+) -> np.ndarray:
     """Convert angular velocity to quaternion modifier.
 
     :param angular_velocity: Angular velocity vector represented as a numpy array
     :param dt: Time interval in seconds
+    :param scalar_first: If true, the scalar component of the quaternion is placed first
     :return: Omega matrix
     """
     om_x, om_y, om_z = np.reshape(angular_velocity, (3,))
-    skew = np.array(
-        [
-            [2 / dt, -om_x, -om_y, -om_z],
-            [om_x, 2 / dt, om_z, -om_y],
-            [om_y, -om_z, 2 / dt, om_x],
-            [om_z, om_y, -om_x, 2 / dt],
-        ]
-    )
+    if scalar_first:
+        skew = np.array(
+            [
+                [2 / dt, -om_x, -om_y, -om_z],
+                [om_x, 2 / dt, om_z, -om_y],
+                [om_y, -om_z, 2 / dt, om_x],
+                [om_z, om_y, -om_x, 2 / dt],
+            ]
+        )
+    else:
+        skew = np.array(
+            [
+                [2 / dt, om_z, -om_y, om_x],
+                [-om_z, 2 / dt, om_x, om_y],
+                [om_y, -om_x, 2 / dt, om_z],
+                [-om_x, -om_y, -om_z, 2 / dt],
+            ]
+        )
 
     return dt / 2 * skew
 
@@ -147,11 +160,12 @@ def omega_exp(angular_velocity: np.ndarray, dt: float) -> np.ndarray:
     return rot
 
 
-def quat2rot(quat: np.ndarray) -> np.ndarray:
+def quat2rot(quat: np.ndarray, scalar_first: bool = False) -> np.ndarray:
     """Convert quaternion to a rotation matrix.
 
     :param quat: Quaternion represented as a numpy array
+    :param scalar_first: If true, the scalar component of the quaternion is placed first
     :return: Rotation matrix
     """
     quat_flat = np.reshape(quat, (4,))
-    return Rot.from_quat(quat_flat, scalar_first=True).as_matrix()
+    return Rot.from_quat(quat_flat, scalar_first=scalar_first).as_matrix()

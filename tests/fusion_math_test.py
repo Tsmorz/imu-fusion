@@ -81,7 +81,7 @@ def test_predict_rotation_methods_equal() -> None:
     """Test that the apply_angular_velocity function methods are equal."""
     # Arrange
     rot = np.eye(3)
-    quat = np.array([[1.0], [0.0], [0.0], [0.0]])
+    quat = np.array([[0.0], [0.0], [0.0], [1.0]])
     omegas = np.array([[np.pi, np.pi, np.pi]])
     dt = 0.01
 
@@ -91,7 +91,7 @@ def test_predict_rotation_methods_equal() -> None:
         quat = predict_rotation(orientation=quat, angular_velocity=omegas, dt=dt)
 
     # Assert
-    rot_from_quat = Rot.from_quat(np.reshape(quat, (4,)), scalar_first=True)
+    rot_from_quat = Rot.from_quat(np.reshape(quat, (4,)))
     np.testing.assert_array_almost_equal(rot, rot_from_quat.as_matrix(), decimal=3)
 
 
