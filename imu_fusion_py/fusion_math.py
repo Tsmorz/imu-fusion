@@ -145,3 +145,13 @@ def omega_exp(angular_velocity: np.ndarray, dt: float) -> np.ndarray:
     """
     rot = matrix_exponential(skew_matrix(angular_velocity), dt=dt)
     return rot
+
+
+def quat2rot(quat: np.ndarray) -> np.ndarray:
+    """Convert quaternion to a rotation matrix.
+
+    :param quat: Quaternion represented as a numpy array
+    :return: Rotation matrix
+    """
+    quat_flat = np.reshape(quat, (4,))
+    return Rot.from_quat(quat_flat, scalar_first=True).as_matrix()
