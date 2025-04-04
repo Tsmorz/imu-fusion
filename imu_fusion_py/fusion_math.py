@@ -2,12 +2,19 @@
 
 from typing import Optional
 
+import matplotlib.pyplot as plt
 import numpy as np
 from lie_groups_py.se3 import SE3
 from scipy.optimize import minimize
 from scipy.spatial.transform import Rotation as Rot
 
-from imu_fusion_py.config.definitions import EULER_ORDER, GRAVITY, NELDER_MEAD_METHOD
+from imu_fusion_py.config.definitions import (
+    EULER_ORDER,
+    FIG_SIZE,
+    GRAVITY,
+    LEGEND_LOC,
+    NELDER_MEAD_METHOD,
+)
 from imu_fusion_py.math_utils import matrix_exponential, skew_matrix
 
 
@@ -29,7 +36,7 @@ def predict_rotation(
         raise ValueError("Orientation must be a 3x3 matrix or a 4x1 quaternion.")
 
 
-def pitch_roll_from_acceleration(
+def accel2pitch_roll(
     acceleration_vec: np.ndarray,
     pitch_roll_init: Optional[np.ndarray] = None,
     method: str | None = NELDER_MEAD_METHOD,
@@ -48,9 +55,11 @@ def pitch_roll_from_acceleration(
     if method is None:  # simple method without optimization
         x, y, z = np.reshape(acceleration_vec, (3,))
         roll = np.atan2(y, z)
-        pitch = np.atan2(-x, np.sqrt(y**2 + z**2))
+        pitch = -np.arcsin(x / np.linalg.norm([x, y, z]))
         error = 0.0
 
+        if np.isnan(roll) or np.isnan(pitch):
+            raise ValueError("At least one of the acceleration values is NaN.")
     else:
         residual = minimize(
             fun=pitch_roll_alignment_error,
@@ -87,7 +96,7 @@ def pitch_roll_alignment_error(
     return float(error)
 
 
-def apply_linear_acceleration(
+def predict_with_acceleration(
     pose: SE3,
     vel: np.ndarray,
     accel_meas: np.ndarray,
@@ -101,13 +110,15 @@ def apply_linear_acceleration(
     :param dt: Time interval in seconds.
     :return: Updated position and velocity vectors.
     """
-    accel = accel_meas - GRAVITY * pose.rot @ np.array([[0.0], [0.0], [1.0]])
-    pose.trans += vel * dt + 0.5 * accel * dt**2
+    grav_vec = GRAVITY * pose.rot @ np.array([[0.0], [0.0], [1.0]])
+    accel = accel_meas - grav_vec
+    xyz = pose.trans + vel * dt + 0.5 * accel * dt**2
+    pose.trans = xyz
     vel += accel * dt
     return pose, vel
 
 
-def rotation_matrix_from_yaw_pitch_roll(ypr: np.ndarray) -> np.ndarray:
+def yaw_pitch_roll2rot(ypr: np.ndarray) -> np.ndarray:
     """Calculate the rotation matrix from yaw, pitch, and roll angles.
 
     :param ypr: yaw, pitch, and roll angles in radians
@@ -169,3 +180,83 @@ def quat2rot(quat: np.ndarray, scalar_first: bool = False) -> np.ndarray:
     """
     quat_flat = np.reshape(quat, (4,))
     return Rot.from_quat(quat_flat, scalar_first=scalar_first).as_matrix()
+
+
+def rot2quat(rot: np.ndarray, scalar_first: bool = False) -> np.ndarray:
+    """Convert a rotation matrix to a quaternion.
+
+    :param rot: rotation matrix represented as a numpy array
+    :param scalar_first: If true, the scalar component of the quaternion is placed first
+    :return: quaternion
+    """
+    quat = Rot.from_matrix(rot).as_quat(scalar_first=scalar_first)
+    return np.reshape(quat, (4, 1))
+
+
+def initialize_imu(accel: np.ndarray) -> tuple[SE3, np.ndarray]:
+    """Initialize the IMU with a given acceleration vector.
+
+    :param accel: Gravity vector represented as a numpy array
+    :return: Initial position and velocity vectors.
+    """
+    pitch, roll, _ = accel2pitch_roll(accel, method=None)
+    yaw_pitch_roll_init = np.array([0.0, pitch, roll])
+    rot = yaw_pitch_roll2rot(ypr=yaw_pitch_roll_init)
+    pose = SE3(xyz=np.zeros(3), rot=rot)
+    vel = np.zeros((3, 1))
+    return pose, vel
+
+
+def extract_euler_angles(history: list[SE3]) -> tuple[list, list, list]:
+    """Extract the euler angles from the pose history.
+
+    :param history: List of SE3 matrices
+    :return: Lists of yaw, pitch, and roll angles in degrees.
+    """
+    yaw, pitch, roll = [], [], []
+    for pose in history:
+        yaw_pitch_roll = Rot.from_matrix(pose.rot).as_euler(seq=EULER_ORDER)
+        yaw.append(yaw_pitch_roll[0])
+        pitch.append(yaw_pitch_roll[1])
+        roll.append(yaw_pitch_roll[2])
+    return yaw, pitch, roll
+
+
+def update_plot(
+    ax: plt.axis, pose: SE3, pause_time: float = 0.01
+) -> None:  # pragma: no cover
+    """Update the plot animation with the new pose.
+
+    :param ax: The axis to update.
+    :param pose: The current SE3 pose.
+    :param pause_time: The time to pause after updating the plot.
+    """
+    ax.clear()
+    pose.plot(ax=ax)
+    plt.axis("equal")
+    ax.set_xlim([pose.trans[0] - 2, pose.trans[0] + 2])
+    ax.set_ylim([pose.trans[1] - 2, pose.trans[1] + 2])
+    ax.set_zlim([pose.trans[2] - 2, pose.trans[2] + 2])
+    ax.set_xlabel("X-axis")
+    ax.set_ylabel("Y-axis")
+    ax.set_zlabel("Z-axis")
+    plt.pause(pause_time)
+
+
+def plot_euler_angles(state_history: list[list[SE3]]) -> None:  # pragma: no cover
+    """Plot the euler angles from the pose history.
+
+    :param state_history: List of lists of SE3 matrices representing the pose history.
+    """
+    plt.figure(figsize=FIG_SIZE)
+    for state_list in state_history:
+        ypr = extract_euler_angles(state_list)
+        plt.plot(np.rad2deg(ypr[0]), label="yaw", color="blue", alpha=0.8)
+        plt.plot(np.rad2deg(ypr[1]), label="pitch", color="orange", alpha=0.8)
+        plt.plot(np.rad2deg(ypr[2]), label="roll", color="green", alpha=0.8)
+    plt.grid(True)
+    plt.legend(loc=LEGEND_LOC)
+    plt.title("Euler Angles")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Euler angle (degrees)")
+    plt.show()

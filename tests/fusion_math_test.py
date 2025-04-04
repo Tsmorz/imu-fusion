@@ -7,10 +7,10 @@ from scipy.spatial.transform import Rotation as Rot
 
 from imu_fusion_py.config.definitions import EULER_ORDER, GRAVITY
 from imu_fusion_py.fusion_math import (
-    apply_linear_acceleration,
-    pitch_roll_from_acceleration,
+    accel2pitch_roll,
     predict_rotation,
-    rotation_matrix_from_yaw_pitch_roll,
+    predict_with_acceleration,
+    yaw_pitch_roll2rot,
 )
 
 
@@ -29,7 +29,7 @@ def test_pitch_roll_from_acceleration_optimize(gravity_alignment_vector) -> None
     acc_vector = GRAVITY * gravity_alignment_vector
 
     # Act
-    pitch, roll, err = pitch_roll_from_acceleration(acceleration_vec=acc_vector)
+    pitch, roll, err = accel2pitch_roll(acceleration_vec=acc_vector)
 
     # Assert
     rot = Rot.from_euler(seq=EULER_ORDER, angles=[0.0, pitch, roll]).as_matrix()
@@ -52,9 +52,7 @@ def test_pitch_roll_from_acceleration_naive(gravity_alignment_vector) -> None:
     acc_vector = GRAVITY * gravity_alignment_vector
 
     # Act
-    pitch, roll, err = pitch_roll_from_acceleration(
-        acceleration_vec=acc_vector, method=None
-    )
+    pitch, roll, err = accel2pitch_roll(acceleration_vec=acc_vector, method=None)
 
     # Assert
     rot = Rot.from_euler(seq=EULER_ORDER, angles=[0.0, pitch, roll]).as_matrix()
@@ -115,7 +113,7 @@ def test_yaw_pitch_roll_to_rotation_matrix() -> None:
     roll = 0.0
 
     # Act
-    rot = rotation_matrix_from_yaw_pitch_roll(np.array([yaw, pitch, roll]))
+    rot = yaw_pitch_roll2rot(np.array([yaw, pitch, roll]))
 
     # Assert
     np.testing.assert_array_almost_equal(rot, np.eye(3), decimal=3)
@@ -131,7 +129,7 @@ def test_apply_linear_acceleration():
 
     # Act
     for _i in range(int(1 / dt)):
-        pose, vel = apply_linear_acceleration(
+        pose, vel = predict_with_acceleration(
             pose=pose, vel=vel, accel_meas=accel, dt=dt
         )
 
